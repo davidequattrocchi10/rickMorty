@@ -2,6 +2,7 @@
 import axios from 'axios';
 import CharacterItem from './CharacterItem.vue'
 import SpinnerLoading from './SpinnerLoading.vue'
+import ResultsFilter from './ResultsFilter.vue'
 
 export default {
     name: 'AppMain',
@@ -9,8 +10,36 @@ export default {
         return {
             base_api_url: 'https://rickandmortyapi.com/api/character',
             characters: [],
-            loading: true
+            loading: true,
+            error: ''
         }
+    },
+    methods: {
+        getCharacters(url) {
+            axios
+                .get(url)
+                .then((response) => {
+                    console.log(response.data.results)
+                    this.characters = response.data.results;
+                    this.loading = false;
+
+
+                })
+                .catch((error) => {
+                    console.log(error.response.data.error)
+                    this.error = error.response.data.error;
+
+                })
+        },
+        filterResults(data) {
+            // ?name=rick&status=dead
+            const [searchText, selectStatus] = data;
+            const url = this.base_api_url + '?name=' + searchText + '&status=' + selectStatus
+            console.log(url);
+            this.getCharacters(url)
+            this.error = ''
+        }
+
     },
     computed: {
         getResults() {
@@ -20,22 +49,13 @@ export default {
 
     },
     mounted() {
-        axios
-            .get(this.base_api_url)
-            .then((response) => {
-                console.log(response.data.results)
-                this.characters = response.data.results;
-                this.loading = false;
+        this.getCharacters(this.base_api_url);
 
-
-            })
-            .catch((error) => {
-                console.log(error.message)
-            })
     },
     components: {
         CharacterItem,
-        SpinnerLoading
+        SpinnerLoading,
+        ResultsFilter
     }
 }
 /*Use a timeout to verify loader
@@ -48,25 +68,13 @@ setTimeout(()=>{
     <main>
         <div class="container">
 
+            <ResultsFilter @filtered="filterResults"></ResultsFilter>
 
-            <div class="filters">
-
-                <!-- add name filter input -->
-                <input type="text" placeholder="Type a name to search">
-
-                <!-- add a select status filter -->
-                <select name="status" id="status">
-                    <option value="" selected>All</option>
-                    <option value="alive">Alive</option>
-                    <option value="death">Death</option>
-                    <option value="unknown">Unknown</option>
-                </select>
-
-            </div>
 
 
             <div class="row" v-if="!loading">
-                <CharacterItem v-for="character in characters" :key='character.id + "_character"'
+                <div v-if="error" style="color: red;"> {{ error }}</div>
+                <CharacterItem v-else v-for="character in characters" :key='character.id + "_character"'
                     :character_item="character">
                 </CharacterItem>
             </div>
