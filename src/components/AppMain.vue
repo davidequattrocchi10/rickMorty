@@ -1,61 +1,41 @@
 <script>
-import axios from 'axios';
+
+import { store } from '../store.js'
 import CharacterItem from './CharacterItem.vue'
 import SpinnerLoading from './SpinnerLoading.vue'
 import ResultsFilter from './ResultsFilter.vue'
+import TotalResults from './TotalResults.vue'
 
 export default {
     name: 'AppMain',
     data() {
         return {
-            base_api_url: 'https://rickandmortyapi.com/api/character',
-            characters: [],
-            loading: true,
-            error: ''
+            store
         }
     },
     methods: {
-        getCharacters(url) {
-            axios
-                .get(url)
-                .then((response) => {
-                    console.log(response.data.results)
-                    this.characters = response.data.results;
-                    this.loading = false;
-
-
-                })
-                .catch((error) => {
-                    console.log(error.response.data.error)
-                    this.error = error.response.data.error;
-
-                })
-        },
         filterResults(data) {
             // ?name=rick&status=dead
             const [searchText, selectStatus] = data;
-            const url = this.base_api_url + '?name=' + searchText + '&status=' + selectStatus
+            const url = store.base_api_url + '?name=' + searchText + '&status=' + selectStatus
             console.log(url);
-            this.getCharacters(url)
-            this.error = ''
+            console.log(store)
+            store.getCharacters(url)
+            store.error = false
         }
 
     },
-    computed: {
-        getResults() {
 
-            return this.characters.length > 0 ? "Total results: " + this.characters.length : 'no results yet'
-        }
-
-    },
-    mounted() {
-        this.getCharacters(this.base_api_url);
+    created() {
+        console.log(store.base_api_url)
+        store.getCharacters(store.base_api_url);
 
     },
     components: {
         CharacterItem,
         SpinnerLoading,
-        ResultsFilter
+        ResultsFilter,
+        TotalResults
     }
 }
 /*Use a timeout to verify loader
@@ -72,9 +52,9 @@ setTimeout(()=>{
 
 
 
-            <div class="row" v-if="!loading">
-                <div v-if="error" style="color: red;"> {{ error }}</div>
-                <CharacterItem v-else v-for="character in characters" :key='character.id + "_character"'
+            <div class="row" v-if="!store.loading">
+                <div v-if="store.error" class="try-again"> Try another filter</div>
+                <CharacterItem v-else v-for="character in store.characters" :key='character.id + "_character"'
                     :character_item="character">
                 </CharacterItem>
             </div>
@@ -82,9 +62,7 @@ setTimeout(()=>{
             <SpinnerLoading v-else> </SpinnerLoading>
 
 
-            <div>
-                {{ getResults }}
-            </div>
+            <TotalResults></TotalResults>
         </div>
 
     </main>
@@ -92,4 +70,12 @@ setTimeout(()=>{
 
 
 
-<style scoped></style>
+<style scoped>
+.try-again {
+    color: red;
+    height: 150px;
+    font-size: larger;
+    padding: 1rem;
+
+}
+</style>

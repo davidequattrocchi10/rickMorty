@@ -27,7 +27,7 @@ export default {
 
         <!-- add name filter input -->
 
-        <input type="text" placeholder="Type a name to search" v-model="searchText">
+        <input name='searchText' type="text" placeholder="Type a name to search" v-model="searchText">
 
 
 
@@ -56,10 +56,12 @@ export default {
     input,
     select,
     button {
-        padding: 1rem;
+        padding: 0.5rem;
         margin: 0.1rem;
         border-radius: 0.25rem;
         border-style: none;
+        font-weight: bold;
+
 
     }
 }
